@@ -1,12 +1,12 @@
 # ─── ORIS Simulation Engine ───────────────────────────────────────────────────
-# Pure NumPy orbital mechanics — no Flask here
+
 
 import numpy as np
 from dataclasses import dataclass, field
 from typing import List, Literal
 
-EARTH_RADIUS = 6371      # km (real scale for backend)
-SIM_SCALE    = 120       # canvas units (frontend scale)
+EARTH_RADIUS = 6371      
+SIM_SCALE    = 120       
 
 ObjectType = Literal['satellite', 'debris']
 
@@ -14,13 +14,13 @@ ObjectType = Literal['satellite', 'debris']
 class OrbitalObject:
     id:          int
     type:        ObjectType
-    r:           float          # orbital radius (sim units)
-    theta:       float          # current angle (rad)
-    phi:         float          # elevation (rad)
-    inclination: float          # orbital plane tilt (rad)
-    omega:       float          # angular velocity (rad/frame)
-    mass:        float          # kg
-    size:        float          # visual size
+    r:           float          
+    theta:       float          
+    phi:         float          
+    inclination: float          
+    omega:       float          
+    mass:        float          
+    size:        float          
     x:           float = 0.0
     y:           float = 0.0
     z:           float = 0.0
@@ -46,7 +46,6 @@ class SimulationEngine:
         self.running:   bool  = True
         self.speed:     float = 1.0
 
-    # ── Generate a new object ──────────────────────────────────────────────────
     def _generate(self, obj_type: ObjectType, obj_id: int, r: float = None) -> OrbitalObject:
         rng = np.random
         r   = r or rng.uniform(SIM_SCALE + 30, SIM_SCALE + 220)
@@ -63,7 +62,6 @@ class SimulationEngine:
             size        = rng.uniform(3, 6)      if obj_type == 'satellite' else rng.uniform(1, 3),
         )
 
-    # ── Update single object position ─────────────────────────────────────────
     def _update_position(self, obj: OrbitalObject, dt: float = 1.0):
         obj.theta += obj.omega * dt
         cos_phi = np.cos(obj.phi)
@@ -74,7 +72,6 @@ class SimulationEngine:
         obj.vx  = -obj.r * obj.omega * np.sin(obj.theta)
         obj.vy  =  obj.r * obj.omega * np.cos(obj.theta)
 
-    # ── Initialize with scenario ──────────────────────────────────────────────
     def reset(self, scenario: str = 'normal'):
         from .collision import SCENARIO_CONFIGS
         cfg = SCENARIO_CONFIGS[scenario]
@@ -92,7 +89,6 @@ class SimulationEngine:
             obj_id += 1
         self.frame = 0
 
-    # ── Step simulation forward one tick ──────────────────────────────────────
     def step(self, dt: float = 1.0):
         if not self.running:
             return
@@ -100,7 +96,6 @@ class SimulationEngine:
             self._update_position(obj, dt * self.speed)
         self.frame += 1
 
-    # ── Get state as dict ──────────────────────────────────────────────────────
     def get_state(self) -> dict:
         return {
             'objects': [o.to_dict() for o in self.objects],
@@ -110,7 +105,6 @@ class SimulationEngine:
             'debris':     sum(1 for o in self.objects if o.type == 'debris'),
         }
 
-    # ── Apply maneuver to high-risk objects ───────────────────────────────────
     def apply_maneuver(self, strategy: str = 'altitude_raise'):
         adjusted = 0
         for obj in self.objects:
