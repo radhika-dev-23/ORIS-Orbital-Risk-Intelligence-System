@@ -20,12 +20,10 @@ load_dotenv()
 app    = Flask(__name__)
 CORS(app, resources={r'/api/*': {'origins': '*'}})
 
-# ── Singleton simulation state ─────────────────────────────────────────────────
 sim = SimulationEngine()
 sim.reset('normal')
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
 def build_full_state():
     state      = sim.get_state()
     col        = detect_collisions(sim.objects)
@@ -45,7 +43,6 @@ def build_full_state():
     }
 
 
-# ── Routes ────────────────────────────────────────────────────────────────────
 
 @app.get('/api/health')
 def health():
@@ -119,7 +116,6 @@ def post_report():
     return jsonify({'report': result})
 
 
-# ── Run ───────────────────────────────────────────────────────────────────────
 if __name__ == '__main__':
     port  = int(os.getenv('FLASK_PORT', 5000))
     debug = os.getenv('FLASK_DEBUG', 'true').lower() == 'true'
